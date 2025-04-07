@@ -1,12 +1,13 @@
 import {  useEffect, useState } from 'react'
 import './App.css'
-import Login from './components/Login'
-import Register from './components/Register'
+
 import axios from "axios"
 
 import {db} from "./config/firebase"
 import {collection, query, where , onSnapshot} from "firebase/firestore"
 import Requests from './components/Requests'
+import SeenRequest from './components/SeenRequest'
+import SendJoinRequest from './components/SendJoinRequest'
 
 
 
@@ -14,10 +15,12 @@ import Requests from './components/Requests'
 function App() {
 
   const projectId = 1
+  const userId = 4
 
   const [requests, setRequests] = useState([])
+  const [updatedRequests, setUpdatedRequests] = useState([])
   const isUserLoggedIn = async()=>{
-    axios.get("http://localhost:8080/api/user/is-logged-in" ,  {withCredentials: true})
+    axios.get("http://localhost:8080/api/auth/me" ,  {withCredentials: true})
     .then(response => {
      console.log(response)
     })
@@ -32,7 +35,7 @@ function App() {
 
  useEffect(()=>{
   const requestsRef =  collection(db, "ProjectJoinRequests");
-  const q = query(requestsRef , where("projectId", "==", projectId) , where("status", "==", "PENDING"))
+  const q = query(requestsRef , where("projectId", "==", projectId) , where("status", "==", "PENDING" ))
 
   const unsubscribe = onSnapshot(q, (snapshot)=>{
     const newRequest =  snapshot.docs.map(doc => ({
@@ -49,10 +52,30 @@ function App() {
   return ()=> unsubscribe();
  },[projectId])
 
+ useEffect(()=>{
+  const requestsRef =  collection(db, "ProjectJoinRequests");
+  const q = query(requestsRef , where("userId", "==", 4) , where("status", "in",  ["ACCEPTED", "REJECTED"] ))
+
+  const unsubscribe = onSnapshot(q, (snapshot)=>{
+    const newRequest =  snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }))
+
+    setUpdatedRequests(newRequest)
+    newRequest.map(req => {
+      console.dir(req)
+    })
+  })
+
+  return ()=> unsubscribe();
+  
+
+ },[userId])
+
   return (
    <div  className=' text-[30px] font-bold w-full p-8 flex flex-col items-center justify-center bg-red-400 '>
-    <Login/>
-    <Register/>
+    
     <div>
       <h2>Project Join Requests</h2>
       <ul className='flex flex-row'>
@@ -61,6 +84,20 @@ function App() {
         ))}
       </ul>
     </div>
+
+    <div>
+      <h2>Project Updated Requests</h2>
+      <ul className='flex flex-col'>
+        {
+            updatedRequests.map(req=>(
+              <SeenRequest key={req.id} projectId={req.projectId} userId={userId} status={req.status}/>
+            ))
+        }
+      </ul>
+    </div>
+
+    <div>
+      <SendJoinRequest/> </div>  
   
    </div>
   )

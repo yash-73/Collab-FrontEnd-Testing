@@ -2,12 +2,12 @@ import React from 'react'
 import axios from "axios"
 function Requests({id, userId, projectId, status}) {
 
-    const handleAccept = async ()=>{
-            axios.put("http://localhost:8080/api/notification/accept-request", 
+    const handleUpdate = async (updatedStatus)=>{
+            axios.put("http://localhost:8080/api/notification/update-request", 
                 {
                     projectId: projectId,
                     userId: userId,
-                    status: status,
+                    status: updatedStatus,
                     
                 },
                 {
@@ -21,6 +21,7 @@ function Requests({id, userId, projectId, status}) {
                 console.log("Error: ", err)
             })
     }
+
     return (
         <div key={id} className='flex flex-col items-center justify-center w-[200px]  bg-blue-300' > 
             <div>
@@ -32,11 +33,18 @@ function Requests({id, userId, projectId, status}) {
             <div>
                 Status: {status}
             </div>
-            <button onClick={(e)=> {
+            <button onClick={async (e)=> {
                 e.preventDefault();
-                handleAccept();
-            }} className='bg-green-400'>Accept</button>
-            <button className='bg-red-400' >Reject</button>
+                handleUpdate("ACCEPTED");
+            }} 
+            className='bg-green-400'>Accept</button>
+            <button 
+            onClick={async (e)=>{
+                e.preventDefault();
+                handleUpdate("REJECTED")
+            }}
+            className='bg-red-400' 
+            >Reject</button>
 
         </div>
     )
