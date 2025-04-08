@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { login, logout } from "../store/AuthSlice";
 
 const Dashboard = () => {
   const [repositories, setRepositories] = useState([]);
@@ -12,48 +14,63 @@ const Dashboard = () => {
   const [selectedRepo, setSelectedRepo] = useState("");
   const [pullRequests, setPullRequests] = useState([]);
   const [loadingPRs, setLoadingPRs] = useState(false);
-  const [user, setUser] = useState(null);
+
+  const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadUser();
-    loadRepositories();
-  }, []);
 
-  const loadUser = async () => {
+  const loadUser = useCallback( async () => {
     try {
-      const response = await axios.get("/api/auth/me", {
+      const response = await axios.get("http://localhost:8080/api/auth/me", {
         withCredentials: true,
       });
-      setUser(response.data);
+
+      if (response.data.authenticated) {
+        const userData = {
+          isLoggedIn: true,
+          data: {
+            name: response.data.user.name,
+            username: response.data.user.login,
+            avatar: response.data.user.avatar_url,
+            email: response.data.user.email,
+            githubId: response.data.user.id,
+          },
+        };
+        dispatch(login(userData));
+      }
     } catch (error) {
       console.error("Error loading user:", error);
       setError("Failed to load user data");
     }
-  };
+  },[dispatch])
 
-  const loadRepositories = async () => {
+  const loadRepositories = useCallback( async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get("/api/github/repositories", {
-        withCredentials: true,
-      });
-      // Ensure repositories is always an array
+      const response = await axios.get(
+        "http://localhost:8080/api/github/repositories",
+        {
+          withCredentials: true,
+        }
+      );
       setRepositories(Array.isArray(response.data) ? response.data : []);
-      console.log(response.data);
     } catch (error) {
       console.error("Error loading repositories:", error);
       setError("Failed to load repositories");
-      setRepositories([]); // Ensure repositories is an empty array on error
+      setRepositories([]);
     } finally {
       setLoading(false);
     }
-  };
+  },[ setRepositories, setLoading, setError, ])
 
   const handleLogout = async () => {
     try {
-      await axios.post("/api/auth/logout", {}, { withCredentials: true });
+      await axios.get("http://localhost:8080/api/auth/logout", {
+        withCredentials: true,
+      });
+      dispatch(logout());
       navigate("/");
     } catch (error) {
       console.error("Error logging out:", error);
@@ -136,6 +153,12 @@ const Dashboard = () => {
     }
   };
 
+  
+  useEffect(() => {
+    loadUser();
+    loadRepositories();
+  }, [loadUser, loadRepositories]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
@@ -145,14 +168,14 @@ const Dashboard = () => {
             GitHub OAuth App
           </a>
           <div className="flex items-center space-x-4">
-            {user?.avatarUrl && (
+            {user?.data?.avatar && (
               <img
-                src={user.avatarUrl}
+                src={user.data.avatar}
                 alt="User Avatar"
                 className="w-8 h-8 rounded-full"
               />
             )}
-            {user?.login && <span>{user.login}</span>}
+            {user?.data?.username && <span>{user.data.username}</span>}
             <button
               onClick={handleLogout}
               className="px-4 py-2 border border-white rounded hover:bg-white hover:text-gray-800 transition-colors"

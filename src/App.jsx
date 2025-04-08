@@ -11,12 +11,17 @@
 // import GitHubLogin from "./components/GitHubLogin";
 import Layout from "./layout/Layout";
 import Home from "./pages/Home";
-import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+} from "react-router-dom";
 import { Provider } from "react-redux";
 import authStore from "./store/AuthStore";
 import { RouterProvider } from "react-router-dom";
 import GitHubLogin from "./components/GitHubLogin";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./components/Profile";
 function App() {
   // const projectId = 1
   // const userId = 4
@@ -112,21 +117,19 @@ function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<Layout />}>
-        <Route index element={<Home />}></Route>
-        <Route path="/login" element={<GitHubLogin />}></Route>
-        <Route path="/dashboard" element={<Dashboard />}></Route>
+        <Route index element={<Home />} />
+        <Route path="/login" element={<GitHubLogin />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
     )
   );
 
-  return(
+  return (
     <Provider store={authStore}>
-      <RouterProvider router={router}>
-        <Layout/>
-      </RouterProvider>
+      <RouterProvider router={router} />
     </Provider>
   );
- 
 }
 
 export default App;
