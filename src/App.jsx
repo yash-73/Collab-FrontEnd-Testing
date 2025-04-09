@@ -22,6 +22,9 @@ import { RouterProvider } from "react-router-dom";
 import GitHubLogin from "./components/GitHubLogin";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./components/Profile";
+import Project from "./pages/Project";
+import CustomProject from "./pages/CustomProject";
+
 function App() {
   // const projectId = 1
   // const userId = 4
@@ -121,6 +124,8 @@ function App() {
         <Route path="/login" element={<GitHubLogin />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/projects" element={<Project />} />
+        <Route path="/project/:projectId" element={<CustomProject />} />
       </Route>
     )
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import techstack from "./TechStack/Techstack";
 
 const validRoles = ["USER", "ADMIN"];
@@ -64,7 +65,9 @@ export default function Profile() {
         }
       );
       setProfile(response.data);
-      setRoles(new Set(response.data.roles || []));
+      // Extract role names from role objects
+      const roleNames = response.data.roles?.map((role) => role.roleName) || [];
+      setRoles(new Set(roleNames));
     } catch (error) {
       setError("Failed to load profile");
       console.error("Error loading profile:", error);
@@ -93,6 +96,7 @@ export default function Profile() {
         }
       );
       setProjects(response.data);
+      console.log(response.data);
     } catch (error) {
       console.error("Error loading projects:", error);
     }
@@ -136,20 +140,20 @@ export default function Profile() {
 
   const handleAddRole = async (e) => {
     e.preventDefault();
-
-    // Validate if the role is valid
     if (!validRoles.includes(newRole.toUpperCase())) {
       alert("Please select a valid role (USER or ADMIN)");
       return;
     }
 
     try {
-      await axios.post(
+      const response = await axios.post(
         "http://localhost:8080/api/user/role",
         { roles: [newRole.toUpperCase()] },
         { withCredentials: true }
       );
-      setRoles(new Set([...roles, newRole.toUpperCase()]));
+      // Extract role names from the response
+      const roleNames = response.data.roles?.map((role) => role.roleName) || [];
+      setRoles(new Set(roleNames));
       setNewRole("");
       alert("Role added successfully");
     } catch (error) {
@@ -238,7 +242,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen w-full p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center space-x-4">
@@ -252,186 +256,203 @@ export default function Profile() {
             <div>
               <h1 className="text-2xl font-bold">{profile?.name}</h1>
               <p className="text-gray-600">@{profile?.login}</p>
+              <p className="text-gray-600">{profile?.email}</p>
             </div>
           </div>
         </div>
 
-        {/* Email Update */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Update Email</h2>
-          <form onSubmit={handleEmailUpdate} className="flex space-x-2">
-            <input
-              type="email"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-              placeholder="New email"
-              className="flex-1 p-2 border rounded"
-              required
-            />
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Update
-            </button>
-          </form>
-        </div>
-
-        {/* Roles Management */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Roles</h2>
-          <form
-            onSubmit={handleAddRole}
-            className="flex space-x-2 mb-4 relative"
-          >
-            <div className="flex-1 relative" ref={roleDropdownRef}>
-              <input
-                type="text"
-                value={newRole}
-                onFocus={() => setShowRoleDropdown(true)}
-                onChange={(e) => setNewRole(e.target.value)}
-                placeholder="Select role..."
-                className="w-full p-2 border rounded"
-                required
-                readOnly
-              />
-              {showRoleDropdown && (
-                <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
-                  {validRoles.map((role) => (
-                    <div
-                      key={role}
-                      onClick={() => handleRoleSelect(role)}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      {role}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button
-              type="submit"
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-            >
-              Add Role
-            </button>
-          </form>
-          <div className="flex flex-wrap gap-2">
-            {Array.from(roles).map((role) => (
-              <span
-                key={role}
-                className="bg-gray-200 px-3 py-1 rounded-full text-sm"
-              >
-                {role}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Tech Stack Management */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Tech Stack</h2>
-          <form
-            onSubmit={handleAddTech}
-            className="flex space-x-2 mb-4 relative"
-          >
-            <div className="flex-1 relative" ref={techDropdownRef}>
-              <input
-                type="text"
-                value={newTech}
-                onChange={handleTechInputChange}
-                placeholder="Search technology..."
-                className="w-full p-2 border rounded"
-                required
-              />
-              {showSuggestions && techSuggestions.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  {techSuggestions.map((tech) => (
-                    <div
-                      key={tech}
-                      onClick={() => handleTechSelect(tech)}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      {tech}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button
-              type="submit"
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-            >
-              Add Tech
-            </button>
-          </form>
-          <div className="flex flex-wrap gap-2">
-            {Array.from(techStack).map((tech) => (
-              <div
-                key={tech}
-                className="bg-gray-200 px-3 py-1 rounded-full text-sm flex items-center space-x-1"
-              >
-                <span>{tech}</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Left Column */}
+          <div className="space-y-8">
+            {/* Email Update */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Update Email</h2>
+              <form onSubmit={handleEmailUpdate} className="flex space-x-2">
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="New email"
+                  className="flex-1 p-2 border rounded"
+                  required
+                />
                 <button
-                  onClick={() => handleRemoveTech(tech)}
-                  className="text-red-500 hover:text-red-700"
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                 >
-                  ×
+                  Update
                 </button>
-              </div>
-            ))}
-          </div>
-        </div>
+              </form>
+            </div>
 
-        {/* Created Projects */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">My Created Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {projects.map((project) => (
-              <div
-                key={project.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+            {/* Roles Management */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Roles</h2>
+              <form
+                onSubmit={handleAddRole}
+                className="flex space-x-2 mb-4 relative"
               >
-                <h3 className="font-semibold">{project.name}</h3>
-                <p className="text-gray-600 text-sm">{project.description}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {project.techStack?.map((tech) => (
-                    <span
-                      key={tech}
-                      className="bg-gray-200 px-2 py-1 rounded-full text-xs"
-                    >
-                      {tech}
-                    </span>
-                  ))}
+                <div className="flex-1 relative" ref={roleDropdownRef}>
+                  <input
+                    type="text"
+                    value={newRole}
+                    onFocus={() => setShowRoleDropdown(true)}
+                    onChange={(e) => setNewRole(e.target.value)}
+                    placeholder="Select role..."
+                    className="w-full p-2 border rounded"
+                    required
+                    readOnly
+                  />
+                  {showRoleDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
+                      {validRoles.map((role) => (
+                        <div
+                          key={role}
+                          onClick={() => handleRoleSelect(role)}
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {role}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+                <button
+                  type="submit"
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  Add Role
+                </button>
+              </form>
+              <div className="flex flex-wrap gap-2">
+                {Array.from(roles).map((role) => (
+                  <span
+                    key={role}
+                    className="bg-gray-200 px-3 py-1 rounded-full text-sm"
+                  >
+                    {typeof role === "object" ? role.roleName : role}
+                  </span>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Joined Projects */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Joined Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {joinedProjects.map((project) => (
-              <div
-                key={project.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+            {/* Tech Stack Management */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Tech Stack</h2>
+              <form
+                onSubmit={handleAddTech}
+                className="flex space-x-2 mb-4 relative"
               >
-                <h3 className="font-semibold">{project.name}</h3>
-                <p className="text-gray-600 text-sm">{project.description}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {project.techStack?.map((tech) => (
-                    <span
-                      key={tech}
-                      className="bg-gray-200 px-2 py-1 rounded-full text-xs"
-                    >
-                      {tech}
-                    </span>
-                  ))}
+                <div className="flex-1 relative" ref={techDropdownRef}>
+                  <input
+                    type="text"
+                    value={newTech}
+                    onChange={handleTechInputChange}
+                    placeholder="Search technology..."
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                  {showSuggestions && techSuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {techSuggestions.map((tech) => (
+                        <div
+                          key={tech}
+                          onClick={() => handleTechSelect(tech)}
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {tech}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+                <button
+                  type="submit"
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  Add Tech
+                </button>
+              </form>
+              <div className="flex flex-wrap gap-2">
+                {Array.from(techStack).map((tech) => (
+                  <div
+                    key={tech}
+                    className="bg-gray-200 px-3 py-1 rounded-full text-sm flex items-center space-x-1"
+                  >
+                    <span>{tech}</span>
+                    <button
+                      onClick={() => handleRemoveTech(tech)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-8">
+            {/* Created Projects */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                My Created Projects
+              </h2>
+              <div className="space-y-4">
+                {projects.map((project) => (
+                  <Link
+                    key={project.projectId}
+                    to={`/project/${project.projectId}`}
+                    className="block border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <h3 className="font-semibold">{project.projectName}</h3>
+                    <p className="text-gray-600 text-sm">
+                      {project.description}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {project.techStack?.map((tech) => (
+                        <span
+                          key={tech}
+                          className="bg-gray-200 px-2 py-1 rounded-full text-xs"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Joined Projects */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">Joined Projects</h2>
+              <div className="space-y-4">
+                {joinedProjects.map((project) => (
+                  <Link
+                    key={project.projectId}
+                    to={`/project/${project.projectId}`}
+                    className="block border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
+                    <h3 className="font-semibold">{project.projectName}</h3>
+                    <p className="text-gray-600 text-sm">
+                      {project.description}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {project.techStack?.map((tech) => (
+                        <span
+                          key={tech}
+                          className="bg-gray-200 px-2 py-1 rounded-full text-xs"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

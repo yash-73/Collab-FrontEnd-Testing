@@ -7,11 +7,13 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle } from "react-icons/fa";
 
+
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     const isUserLoggedIn = user.isLoggedIn;
@@ -92,10 +94,13 @@ function Navbar() {
           dispatch(login(userState));
         }
       }
+      else{
+        navigate("/login");
+      }
     };
 
     checkAuth();
-  }, [dispatch]);
+  }, [dispatch, navigate]);
 
   const handleLogout = async (e) => {
     e.preventDefault();

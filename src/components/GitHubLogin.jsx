@@ -8,10 +8,10 @@ const GitHubLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5">
+    <div className="h-[600px] flex items-center justify-center p-5">
       <div className="w-full max-w-md text-center">
-        <h1 className="text-4xl font-bold text-[#24292e] mb-4">
-          GitHub OAuth Integration
+        <h1 className="text-4xl font-bold text-gray-500 mb-4">
+          Login Via GitHub
         </h1>
         <p className="text-xl text-[#586069] leading-relaxed mb-6">
           Connect your GitHub account to access your repositories, make commits,
@@ -19,7 +19,7 @@ const GitHubLogin = () => {
         </p>
         <button
           onClick={handleLogin}
-          className="bg-[#24292e] text-white px-6 py-3 rounded-md font-medium flex items-center justify-center gap-2 mx-auto hover:bg-[#1a1f24] transition-colors duration-200"
+          className="bg-[#24292e] text-white px-6 py-3 rounded-md font-medium flex items-center justify-center gap-2 mx-auto hover:bg-[#1a1f24] transition-colors duration-200 cursor-pointer"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
