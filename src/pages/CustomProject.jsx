@@ -1,35 +1,69 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useSelector } from 'react-redux';
 
 function CustomProject() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
+  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isMember, setIsMember] = useState(false);
+  const [joinRequestSent, setJoinRequestSent] = useState(false);
+  const [joinRequestError, setJoinRequestError] = useState(null);
+  
+  const currentUser = useSelector(state => state.auth.user.data);
 
   useEffect(() => {
-    const fetchProject = async () => {
+    const fetchProjectData = async () => {
       try {
-        // TODO: Add API endpoint to fetch single project
-        const response = await axios.get(
+        // Fetch project details
+        const projectResponse = await axios.get(
           `http://localhost:8080/api/project/${projectId}`,
           { withCredentials: true }
         );
-        setProject(response.data);
-        console.log(response.data);
-        setError(null);
+        setProject(projectResponse.data);
 
+        // Fetch project members
+        const membersResponse = await axios.get(
+          `http://localhost:8080/api/project/${projectId}/members`,
+          { withCredentials: true }
+        );
+        setMembers(membersResponse.data);
+
+        // Check if current user is a member using Redux store data
+        if (currentUser) {
+          setIsMember(membersResponse.data.some(member => member.id === currentUser.id));
+        }
+
+        setError(null);
       } catch (error) {
-        console.error("Error fetching project:", error);
-        setError(error.response?.data || "Failed to load project");
+        console.error("Error fetching project data:", error);
+        setError(error.response?.data || "Failed to load project data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProject();
-  }, [projectId]);
+    fetchProjectData();
+  }, [projectId, currentUser]);
+
+  const handleJoinRequest = async () => {
+    try {
+      setJoinRequestError(null);
+      const response = await axios.post(
+        'http://localhost:8080/api/notification/join-request',
+        { projectId: parseInt(projectId) },
+        { withCredentials: true }
+      );
+      setJoinRequestSent(true);
+    } catch (error) {
+      console.error("Error sending join request:", error);
+      setJoinRequestError(error.response?.data || "Failed to send join request");
+    }
+  };
 
   if (loading) {
     return (
@@ -101,6 +135,71 @@ function CustomProject() {
               <h2 className="text-xl font-semibold mb-2">Project Details</h2>
               <div className="bg-gray-50 p-4 rounded-lg">
                 {renderNestedObject(project)}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Project Members</h2>
+              {!isMember && !joinRequestSent && (
+                <div className="mb-4">
+                  <button
+                    onClick={handleJoinRequest}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Request to Join Project
+                  </button>
+                  {joinRequestError && (
+                    <p className="text-red-500 mt-2">{joinRequestError}</p>
+                  )}
+                </div>
+              )}
+              {joinRequestSent && (
+                <div className="mb-4">
+                  <p className="text-green-500">Join request sent successfully!</p>
+                </div>
+              )}
+              {isMember && (
+                <div className="mb-4">
+                  <button
+                    onClick={() => navigate(`/project/${projectId}/collaborate`)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Collaborate
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {members.map((member) => (
+                  <div key={member.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center space-x-3 mb-2">
+                      {member.avatarUrl && (
+                        <img
+                          src={member.avatarUrl}
+                          alt={member.name}
+                          className="w-10 h-10 rounded-full"
+                        />
+                      )}
+                      <div>
+                        <h3 className="font-semibold">{member.name}</h3>
+                        <p className="text-sm text-gray-500">{member.login}</p>
+                      </div>
+                    </div>
+                    {member.techStack && member.techStack.length > 0 && (
+                      <div className="mt-2">
+                        <div className="flex flex-wrap gap-1">
+                          {member.techStack.map((tech) => (
+                            <span
+                              key={tech}
+                              className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

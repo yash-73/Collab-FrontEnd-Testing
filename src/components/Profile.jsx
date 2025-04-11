@@ -349,20 +349,25 @@ export default function Profile() {
                     value={newTech}
                     onChange={handleTechInputChange}
                     placeholder="Search technology..."
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border text-black rounded"
                     required
                   />
-                  {showSuggestions && techSuggestions.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {techSuggestions.map((tech) => (
-                        <div
-                          key={tech}
-                          onClick={() => handleTechSelect(tech)}
-                          className="p-2 hover:bg-gray-100 cursor-pointer"
-                        >
-                          {tech}
-                        </div>
-                      ))}
+                  {/* Dropdown for tech suggestions */}
+                  {showSuggestions && (
+                    <div className="absolute z-10 text-black w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {techSuggestions.length > 0 ? (
+                        techSuggestions.map((tech) => (
+                          <div
+                            key={tech}
+                            onClick={() => handleTechSelect(tech)}
+                            className="p-2 hover:bg-gray-100 cursor-pointer"
+                          >
+                            {tech}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-2 text-gray-500">No suggestions found</div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -373,15 +378,16 @@ export default function Profile() {
                   Add Tech
                 </button>
               </form>
+              {/* Render techStack */}
               <div className="flex flex-wrap gap-2">
                 {Array.from(techStack).map((tech) => (
                   <div
-                    key={tech}
+                    key={tech.id || tech} // Use `tech.id` if it's an object, or `tech` if it's a string
                     className="bg-gray-200 px-3 py-1 rounded-full text-sm flex items-center space-x-1"
                   >
-                    <span>{tech}</span>
+                    <span>{tech.techName || tech}</span> {/* Render `techName` if it's an object */}
                     <button
-                      onClick={() => handleRemoveTech(tech)}
+                      onClick={() => handleRemoveTech(tech.id || tech)}
                       className="text-red-500 hover:text-red-700"
                     >
                       ×
@@ -411,7 +417,9 @@ export default function Profile() {
                       {project.description}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {project.techStack?.map((tech) => (
+                      {project.techStack.map((tech) => 
+                    
+                        (
                         <span
                           key={tech}
                           className="bg-gray-200 px-2 py-1 rounded-full text-xs"

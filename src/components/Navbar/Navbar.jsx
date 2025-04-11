@@ -38,6 +38,11 @@ function Navbar() {
       icon: <FaUserCircle />,
       isLoggedIn: true,
     },
+    {
+      name: "Notifications",
+      path: "/notifications",
+      isLoggedIn: true,
+    }
   ];
 
   const isAuthenticated = async () => {

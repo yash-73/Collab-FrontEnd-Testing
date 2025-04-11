@@ -24,98 +24,10 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./components/Profile";
 import Project from "./pages/Project";
 import CustomProject from "./pages/CustomProject";
-
+import CollaborateProject from "./pages/CollaborateProject";
+import Notifications from "./components/Notifications";
 function App() {
-  // const projectId = 1
-  // const userId = 4
-
-  // const [requests, setRequests] = useState([])
-  // const [updatedRequests, setUpdatedRequests] = useState([])
-
-  // const isUserLoggedIn = async()=>{
-  //   axios.get("http://localhost:8080/api/auth/me" ,  {withCredentials: true})
-  //   .then(response => {
-  //    console.log(response)
-  //   })
-  //   .catch((err)=> {
-  //     console.log("Error: ", err)
-  //   })
-  // }
-
-  //  useEffect(()=>{
-  //   isUserLoggedIn()
-  //  },[])
-
-  //  useEffect(()=>{
-  //   const requestsRef =  collection(db, "ProjectJoinRequests");
-  //   const q = query(requestsRef , where("projectId", "==", projectId) , where("status", "==", "PENDING" ))
-
-  //   const unsubscribe = onSnapshot(q, (snapshot)=>{
-  //     const newRequest =  snapshot.docs.map(doc => ({
-  //       id: doc.id,
-  //       ...doc.data(),
-  //     }))
-
-  //     setRequests(newRequest)
-  //     newRequest.map(req => {
-  //       console.dir(req)
-  //     })
-  //   })
-
-  //   return ()=> unsubscribe();
-  //  },[projectId])
-
-  //  useEffect(()=>{
-  //   const requestsRef =  collection(db, "ProjectJoinRequests");
-  //   const q = query(requestsRef , where("userId", "==", 4) , where("status", "in",  ["ACCEPTED", "REJECTED"] ))
-
-  //   const unsubscribe = onSnapshot(q, (snapshot)=>{
-  //     const newRequest =  snapshot.docs.map(doc => ({
-  //       id: doc.id,
-  //       ...doc.data(),
-  //     }))
-
-  //     setUpdatedRequests(newRequest)
-  //     newRequest.map(req => {
-  //       console.dir(req)
-  //     })
-  //   })
-
-  //   return ()=> unsubscribe();
-
-  //  },[userId])
-
-  // return (
-  //  <div  className=' text-[30px] font-bold w-full p-8 flex flex-col items-center justify-center bg-red-400 '>
-
-  //   <div>
-  //     <h2>Project Join Requests</h2>
-  //     <ul className='flex flex-row'>
-  //       {requests.map((req) => (
-  //         <Requests key={req.id} userId={req.userId} projectId={req.projectId} status={req.status}/>
-  //       ))}
-  //     </ul>
-  //   </div>
-
-  //   <div>
-  //     <h2>Project Updated Requests</h2>
-  //     <ul className='flex flex-col'>
-  //       {
-  //           updatedRequests.map(req=>(
-  //             <SeenRequest key={req.id} projectId={req.projectId} userId={userId} status={req.status}/>
-  //           ))
-  //       }
-  //     </ul>
-  //   </div>
-
-  //   <div>
-  //     <SendJoinRequest/>
-  //      </div>
-
-  //      <GitHubLogin/>
-
-  //  </div>
-  // )
+  
 
   const router = createBrowserRouter(
     createRoutesFromElements(
@@ -126,6 +38,8 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/projects" element={<Project />} />
         <Route path="/project/:projectId" element={<CustomProject />} />
+        <Route path="/project/:projectId/collaborate" element={<CollaborateProject />} />
+        <Route path="/notifications" element={<Notifications />} />
       </Route>
     )
   );
