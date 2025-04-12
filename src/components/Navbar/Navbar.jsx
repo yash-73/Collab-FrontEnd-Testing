@@ -6,12 +6,14 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Home, FolderGit2, UserCircle, Bell, LogOut, LogIn } from 'lucide-react';
+import { useLocation } from "react-router-dom";
 
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const isUserLoggedIn = user.isLoggedIn;
