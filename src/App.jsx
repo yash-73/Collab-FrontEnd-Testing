@@ -21,7 +21,7 @@ import authStore from "./store/AuthStore";
 import { RouterProvider } from "react-router-dom";
 import GitHubLogin from "./components/GitHubLogin";
 import Dashboard from "./pages/Dashboard";
-import Profile from "./components/Profile";
+import Profile from "./pages/Profile";
 import Project from "./pages/Project";
 import CustomProject from "./pages/CustomProject";
 import CollaborateProject from "./pages/CollaborateProject";

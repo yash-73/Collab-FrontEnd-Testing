@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import techstack from "./TechStack/Techstack";
+import { Plus, X, Code2 } from 'lucide-react';
 
 function CreateProject({ onProjectCreated }) {
   const [formData, setFormData] = useState({
@@ -74,7 +75,6 @@ function CreateProject({ onProjectCreated }) {
         onProjectCreated(response.data);
       }
 
-      // Reset form
       setFormData({
         name: "",
         description: "",
@@ -88,16 +88,19 @@ function CreateProject({ onProjectCreated }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-xl font-semibold mb-4">Create New Project</h2>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <h2 className="text-xl font-semibold text-gray-900 flex items-center mb-6">
+        <Plus className="w-5 h-5 mr-2 text-green-500" />
+        Create New Project
+      </h2>
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-6">
           {error}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Project Name
           </label>
           <input
@@ -105,47 +108,47 @@ function CreateProject({ onProjectCreated }) {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
             rows="3"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Tech Stack
           </label>
-          <div className="mt-1 flex space-x-2">
+          <div className="flex space-x-3">
             <input
               type="text"
               value={newTech}
               onChange={handleTechInputChange}
               placeholder="Search technology..."
-              className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
             />
             <button
               type="button"
               onClick={handleAddTech}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             >
-              Add
+              <Plus className="w-5 h-5" />
             </button>
           </div>
           {showSuggestions && techSuggestions.length > 0 && (
-            <div className="mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="mt-2 bg-white border border-gray-100 rounded-lg shadow-lg max-h-60 overflow-y-auto">
               {techSuggestions.map((tech) => (
                 <div
                   key={tech}
@@ -153,7 +156,7 @@ function CreateProject({ onProjectCreated }) {
                     setNewTech(tech);
                     setShowSuggestions(false);
                   }}
-                  className="p-2 hover:bg-gray-100 cursor-pointer"
+                  className="px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors"
                 >
                   {tech}
                 </div>
@@ -166,15 +169,16 @@ function CreateProject({ onProjectCreated }) {
           {Array.from(formData.techStack).map((tech) => (
             <div
               key={tech}
-              className="bg-gray-200 px-3 py-1 rounded-full text-sm flex items-center space-x-1"
+              className="group bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2"
             >
+              <Code2 className="w-4 h-4" />
               <span>{tech}</span>
               <button
                 type="button"
                 onClick={() => handleRemoveTech(tech)}
-                className="text-red-500 hover:text-red-700"
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-green-600 hover:text-green-800"
               >
-                ×
+                <X className="w-4 h-4" />
               </button>
             </div>
           ))}
@@ -182,9 +186,10 @@ function CreateProject({ onProjectCreated }) {
 
         <button
           type="submit"
-          className="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          className="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center space-x-2"
         >
-          Create Project
+          <Plus className="w-5 h-5" />
+          <span>Create Project</span>
         </button>
       </form>
     </div>

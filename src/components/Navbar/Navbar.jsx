@@ -5,15 +5,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
-
+import { Home, FolderGit2, UserCircle, Bell, LogOut, LogIn } from 'lucide-react';
 
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
 
   useEffect(() => {
     const isUserLoggedIn = user.isLoggedIn;
@@ -25,22 +23,25 @@ function Navbar() {
     {
       name: "Home",
       path: "/",
+      icon: <Home className="w-5 h-5" />,
       isLoggedIn: true,
     },
     {
       name: "Projects",
       path: "/projects",
+      icon: <FolderGit2 className="w-5 h-5" />,
       isLoggedIn: true,
     },
     {
       name: "Profile",
       path: "/profile",
-      icon: <FaUserCircle />,
+      icon: <UserCircle className="w-5 h-5" />,
       isLoggedIn: true,
     },
     {
       name: "Notifications",
       path: "/notifications",
+      icon: <Bell className="w-5 h-5" />,
       isLoggedIn: true,
     }
   ];
@@ -98,8 +99,7 @@ function Navbar() {
           console.log("Dispatching login with:", userState);
           dispatch(login(userState));
         }
-      }
-      else{
+      } else {
         navigate("/login");
       }
     };
@@ -125,38 +125,50 @@ function Navbar() {
   };
 
   return (
-    <div className="w-[80%] rounded-2xl shadow-md shadow-gray-900 bg-gray-300 flex justify-between items-center p-4 m-4">
-      <h1 className="text-black text-xl font-semibold">DevSync</h1>
-
-      <ul className=" flex flex-row ">
-        {navItems.map((item, index) =>
-          item.isLoggedIn ? (
-            <li
-              className="mx-4 px-4 text-black text-xl font-semibold border-[1px] border-gray-300 rounded-lg p-2 hover:bg-blue-600 hover:text-gray-200 transition-all duration-300"
-              key={index}
-            >
-              <Link to={item.path}>{item.name}</Link>
-            </li>
-          ) : null
-        )}
-        {!isLoggedIn && (
-          <Link
-            className="mx-4 px-4 text-black text-xl font-semibold border-[1px] border-gray-300  rounded-lg p-2 hover:bg-blue-600 bg-blue-400  transition-all duration-300"
-            to="/login"
-          >
-            Login
+    <nav className="sticky top-0 left-0 right-0 z-50 px-4 py-3">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-gray-100 flex justify-between items-center px-6 py-3">
+          <Link to="/" className="flex items-center space-x-2">
+            <FolderGit2 className="w-8 h-8 text-blue-600" />
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
+              DevSync
+            </span>
           </Link>
-        )}
-        {isLoggedIn && (
-          <button
-            onClick={handleLogout}
-            className="mx-4 px-4 text-black text-xl font-semibold border-[1px] border-gray-300 bg-red-500 rounded-lg p-2 hover:bg-red-600 hover:text-gray-200 transition-all duration-300"
-          >
-            Logout
-          </button>
-        )}
-      </ul>
-    </div>
+
+          <div className="flex items-center space-x-2">
+            {navItems.map((item, index) =>
+              item.isLoggedIn ? (
+                <Link
+                  key={index}
+                  to={item.path}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                >
+                  {item.icon}
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              ) : null
+            )}
+            {!isLoggedIn ? (
+              <Link
+                to="/login"
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              >
+                <LogIn className="w-5 h-5" />
+                <span className="font-medium">Login</span>
+              </Link>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="font-medium">Logout</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
   );
 }
 
