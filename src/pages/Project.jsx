@@ -4,13 +4,14 @@ import { Link } from "react-router-dom";
 import CreateProject from "../components/CreateProject";
 import SearchProject from "../components/SearchProject";
 import DeleteProject from "../components/DeleteProject";
-import { Search, Plus, Briefcase, Code2, Loader2 } from 'lucide-react';
+import { Search, Plus, Briefcase, Code2, Loader2, X } from 'lucide-react';
 
 function Project() {
   const [projects, setProjects] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showCreateProject, setShowCreateProject] = useState(false);
 
   useEffect(() => {
     loadCreatedProjects();
@@ -49,7 +50,7 @@ function Project() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#181818]">
+      <div className="min-h-screen flex items-center justify-center ">
         <div className="text-xl font-medium text-gray-600 flex items-center space-x-3">
           <Loader2 className="w-6 h-6 animate-spin" />
           <span>Loading projects...</span>
@@ -59,15 +60,24 @@ function Project() {
   }
 
   return (
-    <div className="min-h-screen bg-[#181818] w-full py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-full py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex items-center space-x-3">
-          <Briefcase className="w-8 h-8 text-indigo-500" />
-          <h1 className="text-3xl text-gray-300 font-bold">Projects</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Briefcase className="w-8 h-8 text-indigo-400" />
+            <h1 className="text-3xl text-white font-bold">Projects</h1>
+          </div>
+          <button
+            onClick={() => setShowCreateProject(!showCreateProject)}
+            className="bg-indigo-500/80 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors backdrop-blur-sm"
+          >
+            <Plus className="w-5 h-5" />
+            <span>{showCreateProject ? 'Cancel' : 'Create Project'}</span>
+          </button>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+          <div className="bg-red-500/20 border border-red-500/30 text-red-200 px-6 py-4 rounded-lg backdrop-blur-sm">
             {error}
           </div>
         )}
@@ -79,9 +89,9 @@ function Project() {
             
             {/* Search Results */}
             {searchResults.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h2 className="text-xl font-semibold text-gray-900 flex items-center mb-6">
-                  <Search className="w-5 h-5 mr-2 text-blue-500" />
+              <div className="bg-white/10 rounded-2xl shadow-lg border border-white/20 p-8 backdrop-blur-sm">
+                <h2 className="text-xl font-semibold text-white flex items-center mb-6">
+                  <Search className="w-5 h-5 mr-2 text-indigo-400" />
                   Search Results
                 </h2>
                 <div className="space-y-4">
@@ -89,15 +99,15 @@ function Project() {
                     <Link
                       key={project.projectId}
                       to={`/project/${project.projectId}`}
-                      className="block bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors"
+                      className="block bg-white/5 rounded-xl p-6 hover:bg-white/10 transition-colors border border-white/10"
                     >
-                      <h3 className="font-semibold text-lg text-gray-900">{project.projectName}</h3>
-                      <p className="text-gray-600 mt-2">{project.description}</p>
+                      <h3 className="font-semibold text-lg text-white">{project.projectName}</h3>
+                      <p className="text-gray-300 mt-2">{project.description}</p>
                       <div className="mt-4 flex flex-wrap gap-2">
                         {project.techStack?.map((tech) => (
                           <span
                             key={tech}
-                            className="bg-white text-blue-600 px-3 py-1 rounded-full text-sm font-medium border border-blue-100"
+                            className="bg-indigo-500/20 text-indigo-200 px-3 py-1 rounded-full text-sm font-medium border border-indigo-500/30"
                           >
                             {tech}
                           </span>
@@ -112,19 +122,39 @@ function Project() {
 
           {/* Right Column */}
           <div className="space-y-8">
-            <CreateProject onProjectCreated={handleProjectCreated} />
+            {showCreateProject && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
+                <div className="bg-white/10 rounded-lg p-6 w-full max-w-2xl border border-white/20 backdrop-blur-sm">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold text-white">Create New Project</h2>
+                    <button
+                      onClick={() => setShowCreateProject(false)}
+                      className="text-gray-300 hover:text-white"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <CreateProject 
+                    onProjectCreated={(newProject) => {
+                      handleProjectCreated(newProject);
+                      setShowCreateProject(false);
+                    }} 
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Created Projects */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center mb-6">
-                <Code2 className="w-5 h-5 mr-2 text-purple-500" />
+            <div className="bg-white/10 rounded-2xl shadow-lg border border-white/20 p-8 backdrop-blur-sm">
+              <h2 className="text-xl font-semibold text-white flex items-center mb-6">
+                <Code2 className="w-5 h-5 mr-2 text-indigo-400" />
                 My Created Projects
               </h2>
               <div className="space-y-4">
                 {projects.map((project) => (
                   <div
                     key={project.projectId}
-                    className="bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors group"
+                    className="bg-white/5 rounded-xl p-6 hover:bg-white/10 transition-colors border border-white/10 group"
                   >
                     <Link
                       to={`/project/${project.projectId}`}
@@ -132,10 +162,10 @@ function Project() {
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="font-semibold text-lg text-gray-900">
+                          <h3 className="font-semibold text-lg text-white">
                             {project.projectName}
                           </h3>
-                          <p className="text-gray-600 mt-2">
+                          <p className="text-gray-300 mt-2">
                             {project.description}
                           </p>
                         </div>
@@ -144,7 +174,7 @@ function Project() {
                         {project.techStack?.map((tech) => (
                           <span
                             key={tech}
-                            className="bg-white text-purple-600 px-3 py-1 rounded-full text-sm font-medium border border-purple-100"
+                            className="bg-indigo-500/20 text-indigo-200 px-3 py-1 rounded-full text-sm font-medium border border-indigo-500/30"
                           >
                             {tech}
                           </span>

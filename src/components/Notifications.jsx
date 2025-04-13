@@ -1,18 +1,19 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { Bell, CheckCircle, XCircle, Trash2, Clock, Check } from "lucide-react";
 
 function Notifications() {
     const currentUser = useSelector(state => state.auth.user.data);
     const IsLoggedIn = useSelector(state => state.auth.user.isLoggedIn);
     const navigate = useNavigate();
     
-    const [requests, setRequests] = useState([])
-    const [updatedRequests, setUpdatedRequests] = useState([])
-    const [projects, setProjects] = useState([])
+    const [requests, setRequests] = useState([]);
+    const [updatedRequests, setUpdatedRequests] = useState([]);
+    const [projects, setProjects] = useState([]);
     const [ownRequests, setOwnRequests] = useState([]);
 
     const loadProjects = async () => {
@@ -159,29 +160,38 @@ function Notifications() {
     }
 
     return (
-        <div className="min-h-screen w-full p-8">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-3xl font-bold mb-8">Notifications</h1>
+        <div className="min-h-screen w-full bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-950 text-gray-100 p-4 sm:p-6 lg:p-8">
+            <div className="max-w-4xl mx-auto space-y-8">
+                <div className="flex items-center gap-3 mb-8">
+                    <Bell className="w-8 h-8 text-purple-400" />
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        Notifications
+                    </h1>
+                </div>
                 
                 {/* My Join Requests Section */}
-                <div className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-4">My Join Requests</h2>
+                <div className="bg-black/20 backdrop-blur-sm rounded-xl p-6">
+                    <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-blue-400" />
+                        My Join Requests
+                    </h2>
                     {ownRequests.length === 0 ? (
-                        <p className="text-gray-500">No pending join requests</p>
+                        <p className="text-gray-400">No pending join requests</p>
                     ) : (
                         <div className="space-y-4">
                             {ownRequests.map((request) => (
-                                <div key={request.id} className="bg-white p-4 rounded-lg shadow-md">
+                                <div key={request.id} className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-white/10 hover:border-purple-500/50 transition-all">
                                     <div className="flex justify-between items-center">
                                         <div>
-                                            <p className="font-semibold">Project ID: {request.projectId}</p>
-                                            <p className="text-gray-600">Status: {request.status}</p>
+                                            <p className="font-semibold text-purple-300">Project ID: {request.projectId}</p>
+                                            <p className="text-gray-400">Status: {request.status}</p>
                                         </div>
                                         <button
                                             onClick={() => handleDeleteRequest(request.projectId)}
-                                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                                            className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-lg transition-all"
                                         >
-                                            Delete Request
+                                            <Trash2 className="w-4 h-4" />
+                                            Delete
                                         </button>
                                     </div>
                                 </div>
@@ -191,30 +201,35 @@ function Notifications() {
                 </div>
 
                 {/* Pending Join Requests Section */}
-                <div className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-4">Pending Join Requests</h2>
+                <div className="bg-black/20 backdrop-blur-sm rounded-xl p-6">
+                    <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                        <Bell className="w-5 h-5 text-yellow-400" />
+                        Pending Join Requests
+                    </h2>
                     {requests.length === 0 ? (
-                        <p className="text-gray-500">No pending join requests</p>
+                        <p className="text-gray-400">No pending join requests</p>
                     ) : (
                         <div className="space-y-4">
                             {requests.map((request) => (
-                                <div key={request.id} className="bg-white p-4 rounded-lg shadow-md">
+                                <div key={request.id} className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-white/10 hover:border-purple-500/50 transition-all">
                                     <div className="flex justify-between items-center">
                                         <div>
-                                            <p className="font-semibold">User ID: {request.userId}</p>
-                                            <p className="text-gray-600">Project ID: {request.projectId}</p>
+                                            <p className="font-semibold text-purple-300">User ID: {request.userId}</p>
+                                            <p className="text-gray-400">Project ID: {request.projectId}</p>
                                         </div>
-                                        <div className="flex space-x-2">
+                                        <div className="flex gap-3">
                                             <button
                                                 onClick={() => handleRequestAction(request.id, request.userId, request.projectId, "ACCEPTED")}
-                                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                                                className="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 px-4 py-2 rounded-lg transition-all"
                                             >
+                                                <CheckCircle className="w-4 h-4" />
                                                 Accept
                                             </button>
                                             <button
                                                 onClick={() => handleRequestAction(request.id, request.userId, request.projectId, "REJECTED")}
-                                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                                                className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-lg transition-all"
                                             >
+                                                <XCircle className="w-4 h-4" />
                                                 Reject
                                             </button>
                                         </div>
@@ -226,32 +241,38 @@ function Notifications() {
                 </div>
 
                 {/* Updated Requests Section */}
-                <div>
-                    <h2 className="text-2xl font-semibold mb-4">Request Updates</h2>
+                <div className="bg-black/20 backdrop-blur-sm rounded-xl p-6">
+                    <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        Request Updates
+                    </h2>
                     {updatedRequests.length === 0 ? (
-                        <p className="text-gray-500">No request updates</p>
+                        <p className="text-gray-400">No request updates</p>
                     ) : (
                         <div className="space-y-4">
                             {updatedRequests.map((request) => (
                                 <div 
                                     key={request.id} 
-                                    className={`bg-white p-4 rounded-lg shadow-md ${
-                                        request.status === "ACCEPTED" ? "border-l-4 border-green-500" : "border-l-4 border-red-500"
+                                    className={`bg-white/5 backdrop-blur-sm p-4 rounded-lg border transition-all ${
+                                        request.status === "ACCEPTED" 
+                                            ? "border-green-500/30 hover:border-green-500/50" 
+                                            : "border-red-500/30 hover:border-red-500/50"
                                     }`}
                                 >
                                     <div className="flex justify-between items-center">
                                         <div>
-                                            <p className="font-semibold">Project ID: {request.projectId}</p>
+                                            <p className="font-semibold text-purple-300">Project ID: {request.projectId}</p>
                                             <p className={`font-medium ${
-                                                request.status === "ACCEPTED" ? "text-green-600" : "text-red-600"
+                                                request.status === "ACCEPTED" ? "text-green-400" : "text-red-400"
                                             }`}>
                                                 Status: {request.status}
                                             </p>
                                         </div>
                                         <button
                                             onClick={() => handleSeenRequest(request.userId, request.projectId)}
-                                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                            className="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-4 py-2 rounded-lg transition-all"
                                         >
+                                            <Check className="w-4 h-4" />
                                             OK
                                         </button>
                                     </div>

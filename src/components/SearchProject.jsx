@@ -62,19 +62,19 @@ function SearchProject({ onProjectsFound }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-      <h2 className="text-xl font-semibold text-gray-900 flex items-center mb-6">
-        <Search className="w-5 h-5 mr-2 text-blue-500" />
+    <div className="bg-white/10 rounded-2xl shadow-lg border border-white/20 p-8 backdrop-blur-sm">
+      <h2 className="text-xl font-semibold text-white flex items-center mb-6">
+        <Search className="w-5 h-5 mr-2 text-indigo-400" />
         Search Projects by Tech Stack
       </h2>
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-6">
+        <div className="bg-red-500/20 border border-red-500/30 text-red-200 px-6 py-4 rounded-lg mb-6 backdrop-blur-sm">
           {error}
         </div>
       )}
       <form onSubmit={handleSearch} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Tech Stack
           </label>
           <div className="flex space-x-3">
@@ -83,18 +83,18 @@ function SearchProject({ onProjectsFound }) {
               value={searchTech}
               onChange={handleTechInputChange}
               placeholder="Search technology..."
-              className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="flex-1 px-4 py-3 bg-white/5 border border-white/20 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-white placeholder-gray-400"
             />
             <button
               type="button"
               onClick={handleAddTech}
-              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="bg-indigo-500/80 text-white px-6 py-3 rounded-lg hover:bg-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 backdrop-blur-sm"
             >
               <Plus className="w-5 h-5" />
             </button>
           </div>
           {showSuggestions && techSuggestions.length > 0 && (
-            <div className="mt-2 bg-white border border-gray-100 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="mt-2 bg-white/10 border border-white/20 rounded-lg shadow-lg max-h-60 overflow-y-auto backdrop-blur-sm">
               {techSuggestions.map((tech) => (
                 <div
                   key={tech}
@@ -102,7 +102,7 @@ function SearchProject({ onProjectsFound }) {
                     setSearchTech(tech);
                     setShowSuggestions(false);
                   }}
-                  className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
+                  className="px-4 py-3 hover:bg-white/10 cursor-pointer transition-colors text-white"
                 >
                   {tech}
                 </div>
@@ -115,14 +115,14 @@ function SearchProject({ onProjectsFound }) {
           {Array.from(selectedTech).map((tech) => (
             <div
               key={tech}
-              className="group bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2"
+              className="group bg-indigo-500/20 text-indigo-200 px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2 border border-indigo-500/30"
             >
               <Code2 className="w-4 h-4" />
               <span>{tech}</span>
               <button
                 type="button"
                 onClick={() => handleRemoveTech(tech)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-blue-600 hover:text-blue-800"
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-200 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -132,7 +132,7 @@ function SearchProject({ onProjectsFound }) {
 
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center space-x-2"
+          className="w-full bg-indigo-500/80 text-white px-6 py-3 rounded-lg hover:bg-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center space-x-2 backdrop-blur-sm"
         >
           <Search className="w-5 h-5" />
           <span>Search Projects</span>

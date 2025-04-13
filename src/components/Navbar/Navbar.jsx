@@ -36,7 +36,7 @@ function Navbar() {
     },
     {
       name: "Profile",
-      path: "/profile",
+      path: `/profile/${user.data?.id}`,
       icon: <UserCircle className="w-5 h-5" />,
       isLoggedIn: true,
     },
@@ -127,12 +127,12 @@ function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 left-0 right-0 z-50 px-4 py-3">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-gray-100 flex justify-between items-center px-6 py-3">
+    <nav className=" z-50 px-4 py-3">
+      <div className="backdrop-blur-xl shadow-xl max-w-7xl mx-auto">
+        <div className="bg-gradient-to-r from-indigo-900/90 to-purple-900/90 rounded-2xl shadow-lg border border-white/10 flex justify-between items-center px-6 py-3">
           <Link to="/" className="flex items-center space-x-2">
-            <FolderGit2 className="w-8 h-8 text-blue-600" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
+            <FolderGit2 className="w-8 h-8 text-indigo-400" />
+            <span className="text-2xl font-bold text-white">
               DevSync
             </span>
           </Link>
@@ -143,7 +143,11 @@ function Navbar() {
                 <Link
                   key={index}
                   to={item.path}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                    location.pathname === item.path
+                      ? 'bg-indigo-500/50 text-white'
+                      : 'text-gray-300 hover:bg-indigo-500/30 hover:text-white'
+                  }`}
                 >
                   {item.icon}
                   <span className="font-medium">{item.name}</span>
@@ -153,7 +157,7 @@ function Navbar() {
             {!isLoggedIn ? (
               <Link
                 to="/login"
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                className="flex items-center space-x-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
               >
                 <LogIn className="w-5 h-5" />
                 <span className="font-medium">Login</span>
@@ -161,7 +165,7 @@ function Navbar() {
             ) : (
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                className="flex items-center space-x-2 px-4 py-2 bg-red-500/80 text-white rounded-lg hover:bg-red-500 transition-colors duration-200"
               >
                 <LogOut className="w-5 h-5" />
                 <span className="font-medium">Logout</span>

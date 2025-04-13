@@ -26,6 +26,8 @@ import Project from "./pages/Project";
 import CustomProject from "./pages/CustomProject";
 import CollaborateProject from "./pages/CollaborateProject";
 import Notifications from "./components/Notifications";
+import EditProfile from "./pages/EditProfile";
+
 function App() {
   
 
@@ -35,7 +37,8 @@ function App() {
         <Route index element={<Home />} />
         <Route path="/login" element={<GitHubLogin />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:userId" element={<Profile />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
         <Route path="/projects" element={<Project />} />
         <Route path="/project/:projectId" element={<CustomProject />} />
         <Route path="/project/:projectId/collaborate" element={<CollaborateProject />} />

@@ -1,31 +1,19 @@
-import { Code2, Plus, X } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Code2, Plus, X, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 import techstack from '../TechStack/Techstack';
 
-export default function TechStackManagement({ techStack, onTechStackUpdate }) {
-    const [newTech, setNewTech] = useState("");
+function TechStackManagement({ techStack, onUpdate }) {
+    const [searchTech, setSearchTech] = useState("");
     const [techSuggestions, setTechSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const techDropdownRef = useRef(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (techDropdownRef.current && !techDropdownRef.current.contains(event.target)) {
-                setShowSuggestions(false);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+    const [selectedTech, setSelectedTech] = useState(new Set(techStack));
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
 
     const handleTechInputChange = (e) => {
         const value = e.target.value;
-        setNewTech(value);
-
+        setSearchTech(value);
         if (value.length > 0) {
             const filtered = techstack.filter((tech) =>
                 tech.toLowerCase().includes(value.toLowerCase())
@@ -38,107 +26,138 @@ export default function TechStackManagement({ techStack, onTechStackUpdate }) {
         }
     };
 
-    const handleTechSelect = (tech) => {
-        setNewTech(tech);
-        setShowSuggestions(false);
-    };
-
-    const handleAddTech = async (e) => {
+    const handleAddTech = (e) => {
         e.preventDefault();
-        if (!techstack.includes(newTech.toUpperCase())) {
-            alert("Please select a valid technology from the list");
-            return;
-        }
-
-        try {
-            const response = await axios.post(
-                "http://localhost:8080/api/user/tech",
-                { techStack: [newTech.toUpperCase()] },
-                { withCredentials: true }
-            );
-            onTechStackUpdate(response.data);
-            setNewTech("");
+        if (searchTech && techstack.includes(searchTech.toUpperCase())) {
+            setSelectedTech((prev) => new Set([...prev, searchTech.toUpperCase()]));
+            setSearchTech("");
             setShowSuggestions(false);
-            alert("Technology added successfully");
-        } catch (error) {
-            console.error("Error adding technology:", error);
-            alert("Failed to add technology");
         }
     };
 
     const handleRemoveTech = async (tech) => {
         try {
-
-            console.log(tech);
-            const response = await axios.delete(
-                `http://localhost:8080/api/user/tech/${tech.techName || tech}`,
+            await axios.delete(
+                `http://localhost:8080/api/user/tech/${tech}`,
                 { withCredentials: true }
             );
-            onTechStackUpdate(response.data);
-            alert("Technology removed successfully");
+            setSelectedTech((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(tech);
+                return newSet;
+            });
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 2000);
         } catch (error) {
-            console.error("Error removing technology:", error);
-            alert("Failed to remove technology");
+            const errorMessage = error.response?.data?.message || 'Failed to remove technology';
+            setError(errorMessage);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(
+                'http://localhost:8080/api/user/tech',
+                { techStack: Array.from(selectedTech) },
+                { withCredentials: true }
+            );
+            onUpdate(Array.from(selectedTech));
+            setError(null);
+            setSuccess(true);
+            setTimeout(() => setSuccess(false), 2000);
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || 'Failed to update tech stack';
+            setError(errorMessage);
+            setSuccess(false);
         }
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center mb-6">
-                <Code2 className="w-5 h-5 mr-2 text-green-500" />
-                Tech Stack
+        <div className="bg-white/10 rounded-2xl shadow-lg p-8 backdrop-blur-sm border border-white/20">
+            <h2 className="text-xl font-semibold text-white flex items-center mb-6">
+                <Code2 className="w-5 h-5 mr-2 text-indigo-400" />
+                Manage Tech Stack
             </h2>
-            <form onSubmit={handleAddTech} className="flex space-x-3 mb-6 relative">
-                <div className="flex-1 relative" ref={techDropdownRef}>
-                    <input
-                        type="text"
-                        value={newTech}
-                        onChange={handleTechInputChange}
-                        placeholder="Search technology..."
-                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                        required
-                    />
-                    {showSuggestions && (
-                        <div className="absolute z-10 w-full mt-2 bg-white border border-gray-100 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                            {techSuggestions.length > 0 ? (
-                                techSuggestions.map((tech) => (
-                                    <div
-                                        key={tech}
-                                        onClick={() => handleTechSelect(tech)}
-                                        className="px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors first:rounded-t-lg last:rounded-b-lg"
-                                    >
-                                        {tech}
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="px-4 py-3 text-gray-500">No suggestions found</div>
-                            )}
+            {error && (
+                <div className="bg-red-500/20 border border-red-500/30 text-red-200 px-6 py-4 rounded-lg mb-6 backdrop-blur-sm">
+                    {error}
+                </div>
+            )}
+            {success && (
+                <div className="bg-green-500/20 border border-green-500/30 text-green-200 px-6 py-4 rounded-lg mb-6 backdrop-blur-sm flex items-center">
+                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                    Tech stack updated successfully!
+                </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Add Technology
+                    </label>
+                    <div className="flex space-x-3">
+                        <input
+                            type="text"
+                            value={searchTech}
+                            onChange={handleTechInputChange}
+                            placeholder="Search technology..."
+                            className="flex-1 px-4 py-3 bg-white/5 border border-white/20 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-white placeholder-gray-400"
+                        />
+                        <button
+                            type="button"
+                            onClick={handleAddTech}
+                            className="bg-indigo-500/80 text-white px-6 py-3 rounded-lg hover:bg-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 backdrop-blur-sm"
+                        >
+                            <Plus className="w-5 h-5" />
+                        </button>
+                    </div>
+                    {showSuggestions && techSuggestions.length > 0 && (
+                        <div className="mt-2 bg-white/10 border border-white/20 rounded-lg shadow-lg max-h-60 overflow-y-auto backdrop-blur-sm">
+                            {techSuggestions.map((tech) => (
+                                <div
+                                    key={tech}
+                                    onClick={() => {
+                                        setSearchTech(tech);
+                                        setShowSuggestions(false);
+                                    }}
+                                    className="px-4 py-3 hover:bg-white/10 cursor-pointer transition-colors text-white"
+                                >
+                                    {tech}
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
+
+                <div className="flex flex-wrap gap-2">
+                    {Array.from(selectedTech).map((tech) => (
+                        <div
+                            key={tech}
+                            className="group bg-indigo-500/20 text-indigo-200 px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2 border border-indigo-500/30"
+                        >
+                            <Code2 className="w-4 h-4" />
+                            <span>{tech}</span>
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveTech(tech)}
+                                className="text-indigo-200 hover:text-white transition-colors"
+                                title="Remove technology"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
                 <button
                     type="submit"
-                    className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    className="w-full bg-indigo-500/80 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg transition-colors backdrop-blur-sm"
                 >
-                    <Plus className="w-5 h-5" />
+                    Update Tech Stack
                 </button>
             </form>
-            <div className="flex flex-wrap gap-2">
-                {Array.from(techStack).map((tech) => (
-                    <div
-                        key={tech.id || tech}
-                        className="group bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2"
-                    >
-                        <span>{tech.techName || tech}</span>
-                        <button
-                            onClick={() => handleRemoveTech(tech.techName || tech)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-green-600 hover:text-green-800"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                ))}
-            </div>
         </div>
     );
-} 
+}
+
+export default TechStackManagement; 
