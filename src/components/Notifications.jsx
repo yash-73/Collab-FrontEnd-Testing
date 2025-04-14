@@ -4,7 +4,7 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Bell, CheckCircle, XCircle, Trash2, Clock, Check } from "lucide-react";
+import { Bell, CheckCircle, XCircle, Trash2, Clock, Check, ClipboardList } from "lucide-react";
 
 function Notifications() {
     const currentUser = useSelector(state => state.auth.user.data);
@@ -15,6 +15,7 @@ function Notifications() {
     const [updatedRequests, setUpdatedRequests] = useState([]);
     const [projects, setProjects] = useState([]);
     const [ownRequests, setOwnRequests] = useState([]);
+    const [taskNotifications, setTaskNotifications] = useState([]);
 
     const loadProjects = async () => {
         try {
@@ -114,6 +115,27 @@ function Notifications() {
         }
     }, [currentUser?.id]);
 
+    // Listen for new tasks assigned to the current user
+    useEffect(() => {
+        if (currentUser?.id) {
+            const tasksRef = collection(db, "Tasks");
+            const q = query(tasksRef, 
+                where("assignedTo", "==", Number(currentUser.id)),
+                where("status", "==", "REQUESTED")
+            );
+
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const newTasks = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setTaskNotifications(newTasks);
+            });
+
+            return () => unsubscribe();
+        }
+    }, [currentUser?.id]);
+
     const handleRequestAction = async (requestId, userId, projectId, status) => {
         try {
             await axios.put(
@@ -155,6 +177,22 @@ function Notifications() {
         }
     };
 
+    const handleTaskSeen = async (taskId) => {
+        try {
+            await axios.put(
+                `http://localhost:8080/api/task/status`,
+                {
+                    id: taskId,
+                    status: "PENDING"
+                },
+                { withCredentials: true }
+            );
+        } catch (error) {
+            console.error("Error updating task status:", error);
+            alert("Failed to update task status");
+        }
+    };
+
     if (!IsLoggedIn || !currentUser) {
         return null;
     }
@@ -169,6 +207,48 @@ function Notifications() {
                     </h1>
                 </div>
                 
+                {/* Task Notifications Section */}
+                <div className="bg-black/20 backdrop-blur-sm rounded-xl p-6">
+                    <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+                        <ClipboardList className="w-5 h-5 text-blue-400" />
+                        Task Assignments
+                    </h2>
+                    {taskNotifications.length === 0 ? (
+                        <p className="text-gray-400">No new task assignments</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {taskNotifications.map((task) => (
+                                <div 
+                                    key={task.id} 
+                                    className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-white/10 hover:border-blue-500/50 transition-all"
+                                >
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <p className="font-semibold text-blue-300">New Task Assigned</p>
+                                            <p className="text-gray-300 mt-1">{task.details}</p>
+                                            <p className="text-xs text-gray-400 mt-2">
+                                                Project ID: {task.projectId}
+                                            </p>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    handleTaskSeen(task.id);
+                                                    navigate(`/project/${task.projectId}/collaborate`);
+                                                }}
+                                                className="flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-4 py-2 rounded-lg transition-all"
+                                            >
+                                                <Check className="w-4 h-4" />
+                                                View Task
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
                 {/* My Join Requests Section */}
                 <div className="bg-black/20 backdrop-blur-sm rounded-xl p-6">
                     <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">

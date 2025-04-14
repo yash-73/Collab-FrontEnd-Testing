@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import techstack from "./TechStack/Techstack";
-import { Search, Plus, X, Code2 } from 'lucide-react';
+import { Search, Plus, X, Code2, User } from 'lucide-react';
+import { useSelector } from "react-redux";
 
 function SearchProject({ onProjectsFound }) {
   const [searchTech, setSearchTech] = useState("");
@@ -9,6 +10,8 @@ function SearchProject({ onProjectsFound }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedTech, setSelectedTech] = useState(new Set());
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const user = useSelector(state => state.auth.user.data);
 
   const handleTechInputChange = (e) => {
     const value = e.target.value;
@@ -44,6 +47,7 @@ function SearchProject({ onProjectsFound }) {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(
         "http://localhost:8080/api/project/search",
@@ -58,6 +62,34 @@ function SearchProject({ onProjectsFound }) {
     } catch (error) {
       console.error("Error searching projects:", error);
       setError(error.response?.data || "Failed to search projects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearchByUserTechStack = async () => {
+    if (!user?.techStack || user.techStack.size === 0) {
+      setError("No tech stack found in your profile");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/project/search",
+        Array.from(user.techStack),
+        { withCredentials: true }
+      );
+
+      if (onProjectsFound) {
+        onProjectsFound(response.data);
+      }
+      setError(null);
+    } catch (error) {
+      console.error("Error searching projects:", error);
+      setError(error.response?.data || "Failed to search projects");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -130,13 +162,44 @@ function SearchProject({ onProjectsFound }) {
           ))}
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-indigo-500/80 text-white px-6 py-3 rounded-lg hover:bg-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center space-x-2 backdrop-blur-sm"
-        >
-          <Search className="w-5 h-5" />
-          <span>Search Projects</span>
-        </button>
+        <div className="flex space-x-4">
+          <button
+            type="submit"
+            disabled={loading || selectedTech.size === 0}
+            className="flex-1 bg-indigo-500/80 text-white px-6 py-3 rounded-lg hover:bg-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center justify-center space-x-2 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                <span>Searching...</span>
+              </>
+            ) : (
+              <>
+                <Search className="w-5 h-5" />
+                <span>Search Projects</span>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSearchByUserTechStack}
+            disabled={loading || !user?.techStack || user.techStack.size === 0}
+            className="flex-1 bg-purple-500/80 text-white px-6 py-3 rounded-lg hover:bg-purple-500 transition-colors focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 flex items-center justify-center space-x-2 backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                <span>Searching...</span>
+              </>
+            ) : (
+              <>
+                <User className="w-5 h-5" />
+                <span>Search by My Tech Stack</span>
+              </>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );

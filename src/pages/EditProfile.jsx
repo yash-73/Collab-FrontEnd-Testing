@@ -15,7 +15,7 @@ export default function EditProfile() {
     const [createdProjects, setCreatedProjects] = useState([]);
     const [joinedProjects, setJoinedProjects] = useState([]);
     const [techStack, setTechStack] = useState(new Set());
-    const [roles, setRoles] = useState(new Set());
+    const [roles, setRoles] = useState([]);
     const user = useSelector((state) => state.auth.user);
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
@@ -142,7 +142,7 @@ export default function EditProfile() {
                             </div>
                         </div>
                         <button
-                            onClick={() => navigate('/profile')}
+                            onClick={() => navigate(`/profile/${user.data.id}`)}
                             className="bg-indigo-500/80 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors backdrop-blur-sm"
                         >
                             Back to Profile
@@ -157,7 +157,7 @@ export default function EditProfile() {
                 <TechStackManagement techStack={Array.from(techStack)} onUpdate={handleTechStackUpdate} />
 
                 {/* Roles Management */}
-                <RolesManagement roles={Array.from(roles)} onUpdate={handleRolesUpdate} />
+                <RolesManagement roles={roles} onUpdate={handleRolesUpdate} />
 
                 {/* Projects */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

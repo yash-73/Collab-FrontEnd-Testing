@@ -25,6 +25,7 @@ import Profile from "./pages/Profile";
 import Project from "./pages/Project";
 import CustomProject from "./pages/CustomProject";
 import CollaborateProject from "./pages/CollaborateProject";
+import CollaborateMessage from "./pages/CollaborateMessage";
 import Notifications from "./components/Notifications";
 import EditProfile from "./pages/EditProfile";
 
@@ -42,6 +43,7 @@ function App() {
         <Route path="/projects" element={<Project />} />
         <Route path="/project/:projectId" element={<CustomProject />} />
         <Route path="/project/:projectId/collaborate" element={<CollaborateProject />} />
+        <Route path="/project/:projectId/collaborate/message" element={<CollaborateMessage />} />
         <Route path="/notifications" element={<Notifications />} />
       </Route>
     )

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
@@ -10,6 +10,7 @@ import TaskFilters from "../components/collaboration/TaskFilters";
 
 function CollaborateProject() {
     const { projectId } = useParams();
+    const navigate = useNavigate();
     const [project, setProject] = useState(null);
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -232,6 +233,28 @@ function CollaborateProject() {
         <div className="min-h-screen w-full py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto space-y-8">
                 <div className="bg-white/10 min-h-screen rounded-2xl shadow-lg p-8 backdrop-blur-sm border border-white/20">
+                    <div className="flex justify-between items-center mb-8">
+                        <h1 className="text-3xl font-bold text-white">{project?.name}</h1>
+                        <div className="flex space-x-4">
+                            <button
+                                onClick={() => navigate(`/project/${projectId}/collaborate/message`)}
+                                className="px-4 py-2 bg-indigo-500/80 hover:bg-indigo-600/80 text-white rounded-lg transition-colors duration-200 backdrop-blur-sm flex items-center space-x-2"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                                </svg>
+                                <span>Messages</span>
+                            </button>
+                            {isCreator && (
+                                <button
+                                    onClick={() => navigate(`/project/${projectId}/edit`)}
+                                    className="px-4 py-2 bg-indigo-500/80 hover:bg-indigo-600/80 text-white rounded-lg transition-colors duration-200 backdrop-blur-sm"
+                                >
+                                    Edit Project
+                                </button>
+                            )}
+                        </div>
+                    </div>
                     <ProjectHeader
                         project={project}
                         creator={creator}

@@ -7,9 +7,12 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Home, FolderGit2, UserCircle, Bell, LogOut, LogIn } from 'lucide-react';
 import { useLocation } from "react-router-dom";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "../../config/firebase";
 
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -126,8 +129,50 @@ function Navbar() {
     }
   };
 
+  // Listen for unread notifications
+  useEffect(() => {
+    if (!user?.data?.id) return;
+
+    // Listen for project join requests
+    const requestsRef = collection(db, "ProjectJoinRequests");
+    const requestsQuery = query(requestsRef, 
+      where("status", "==", "PENDING")
+    );
+
+    // Listen for task notifications
+    const tasksRef = collection(db, "Tasks");
+    const tasksQuery = query(tasksRef, 
+      where("assignedTo", "==", Number(user.data.id)),
+      where("status", "==", "REQUESTED")
+    );
+
+    const requestsUnsubscribe = onSnapshot(requestsQuery, (snapshot) => {
+      const hasRequests = snapshot.docs.some(doc => {
+        const data = doc.data();
+        return data.userId === user.data.id || 
+               (data.projectId && user.data.projects?.includes(data.projectId));
+      });
+      setHasUnreadNotifications(hasRequests);
+    });
+
+    const tasksUnsubscribe = onSnapshot(tasksQuery, (snapshot) => {
+      const hasTasks = !snapshot.empty;
+      setHasUnreadNotifications(prev => prev || hasTasks);
+    });
+
+    return () => {
+      requestsUnsubscribe();
+      tasksUnsubscribe();
+    };
+  }, [user?.data?.id]);
+
+  // Clear notification indicator when clicking on notifications
+  const handleNotificationsClick = () => {
+    setHasUnreadNotifications(false);
+  };
+
   return (
-    <nav className=" z-50 px-4 py-3">
+    <nav className="z-50 px-4 py-3">
       <div className="backdrop-blur-xl shadow-xl max-w-7xl mx-auto">
         <div className="bg-gradient-to-r from-indigo-900/90 to-purple-900/90 rounded-2xl shadow-lg border border-white/10 flex justify-between items-center px-6 py-3">
           <Link to="/" className="flex items-center space-x-2">
@@ -143,7 +188,8 @@ function Navbar() {
                 <Link
                   key={index}
                   to={item.path}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 ${
+                  onClick={item.name === "Notifications" ? handleNotificationsClick : undefined}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 relative ${
                     location.pathname === item.path
                       ? 'bg-indigo-500/50 text-white'
                       : 'text-gray-300 hover:bg-indigo-500/30 hover:text-white'
@@ -151,6 +197,9 @@ function Navbar() {
                 >
                   {item.icon}
                   <span className="font-medium">{item.name}</span>
+                  {item.name === "Notifications" && hasUnreadNotifications && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-indigo-900/90"></span>
+                  )}
                 </Link>
               ) : null
             )}
