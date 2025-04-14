@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { User2, X, PlusCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User2, X, PlusCircle, CheckCircle2, AlertCircle, GitPullRequest } from 'lucide-react';
 
 export default function TaskAssignment({ projectId, members, isCreator }) {
     const [showModal, setShowModal] = useState(false);
@@ -33,7 +33,8 @@ export default function TaskAssignment({ projectId, members, isCreator }) {
                 {
                     assignedTo: selectedMember.id,
                     projectId: projectId,
-                    details: taskDescription.trim()
+                    details: taskDescription.trim(),
+                    status: 'REQUESTED' // Set initial status as REQUESTED
                 },
                 { withCredentials: true }
             );
@@ -47,7 +48,7 @@ export default function TaskAssignment({ projectId, members, isCreator }) {
             }, 2000);
         } catch (error) {
             console.error('Error assigning task:', error);
-            setError(error.response?.data || 'Failed to assign task');
+            setError(error.response?.data?.message || 'Failed to assign task');
         } finally {
             setLoading(false);
         }

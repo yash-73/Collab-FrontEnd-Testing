@@ -13,6 +13,7 @@ function CreateProject({ onProjectCreated }) {
   const [techSuggestions, setTechSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -81,26 +82,34 @@ function CreateProject({ onProjectCreated }) {
         techStack: new Set(),
       });
       setError(null);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
     } catch (error) {
       console.error("Error creating project:", error);
-      setError(error.response?.data || "Failed to create project");
+      setError(error.response?.data?.message || "Failed to create project");
+      setSuccess(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-      <h2 className="text-xl font-semibold text-gray-900 flex items-center mb-6">
-        <Plus className="w-5 h-5 mr-2 text-green-500" />
+    <div className="bg-white/10 rounded-2xl shadow-lg p-8 backdrop-blur-sm border border-white/20">
+      <h2 className="text-xl font-semibold text-white flex items-center mb-6">
+        <Plus className="w-5 h-5 mr-2 text-indigo-400" />
         Create New Project
       </h2>
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg mb-6">
+        <div className="bg-red-500/20 border border-red-500/30 text-red-200 px-6 py-4 rounded-lg mb-6 backdrop-blur-sm">
           {error}
+        </div>
+      )}
+      {success && (
+        <div className="bg-green-500/20 border border-green-500/30 text-green-200 px-6 py-4 rounded-lg mb-6 backdrop-blur-sm">
+          Project created successfully!
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Project Name
           </label>
           <input
@@ -108,27 +117,27 @@ function CreateProject({ onProjectCreated }) {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-white placeholder-gray-400"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Description
           </label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-white placeholder-gray-400"
             rows="3"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Tech Stack
           </label>
           <div className="flex space-x-3">
@@ -137,18 +146,18 @@ function CreateProject({ onProjectCreated }) {
               value={newTech}
               onChange={handleTechInputChange}
               placeholder="Search technology..."
-              className="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              className="flex-1 px-4 py-3 bg-white/5 border border-white/20 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-white placeholder-gray-400"
             />
             <button
               type="button"
               onClick={handleAddTech}
-              className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              className="bg-indigo-500/80 text-white px-6 py-3 rounded-lg hover:bg-indigo-500 transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 backdrop-blur-sm"
             >
               <Plus className="w-5 h-5" />
             </button>
           </div>
           {showSuggestions && techSuggestions.length > 0 && (
-            <div className="mt-2 bg-white border border-gray-100 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+            <div className="mt-2 bg-white/10 border border-white/20 rounded-lg shadow-lg max-h-60 overflow-y-auto backdrop-blur-sm">
               {techSuggestions.map((tech) => (
                 <div
                   key={tech}
@@ -156,7 +165,7 @@ function CreateProject({ onProjectCreated }) {
                     setNewTech(tech);
                     setShowSuggestions(false);
                   }}
-                  className="px-4 py-3 hover:bg-green-50 cursor-pointer transition-colors"
+                  className="px-4 py-3 hover:bg-white/10 cursor-pointer transition-colors text-white"
                 >
                   {tech}
                 </div>
@@ -169,14 +178,15 @@ function CreateProject({ onProjectCreated }) {
           {Array.from(formData.techStack).map((tech) => (
             <div
               key={tech}
-              className="group bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2"
+              className="group bg-indigo-500/20 text-indigo-200 px-4 py-2 rounded-full text-sm font-medium flex items-center space-x-2 border border-indigo-500/30"
             >
               <Code2 className="w-4 h-4" />
               <span>{tech}</span>
               <button
                 type="button"
                 onClick={() => handleRemoveTech(tech)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-green-600 hover:text-green-800"
+                className="text-indigo-200 hover:text-white transition-colors"
+                title="Remove technology"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -186,7 +196,7 @@ function CreateProject({ onProjectCreated }) {
 
         <button
           type="submit"
-          className="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center space-x-2"
+          className="w-full bg-indigo-500/80 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg transition-colors backdrop-blur-sm flex items-center justify-center space-x-2"
         >
           <Plus className="w-5 h-5" />
           <span>Create Project</span>
