@@ -19,9 +19,7 @@ function Navbar() {
   const location = useLocation();
 
   useEffect(() => {
-    const isUserLoggedIn = user.isLoggedIn;
-    setIsLoggedIn(isUserLoggedIn);
-    console.log("Check user login status", user.isLoggedIn);
+    setIsLoggedIn(user?.isLoggedIn || false);
   }, [user]);
 
   const navItems = [
@@ -39,7 +37,7 @@ function Navbar() {
     },
     {
       name: "Profile",
-      path: `/profile/${user.data?.id}`,
+      path: `/profile/${user?.data?.id}`,
       icon: <UserCircle className="w-5 h-5" />,
       isLoggedIn: true,
     },
@@ -59,11 +57,10 @@ function Navbar() {
           withCredentials: true,
         }
       );
-      console.log("Auth response:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Error fetching user:", error);
-      return null;
+      console.error("Error checking authentication:", error);
+      return { authenticated: false };
     }
   };
 
@@ -72,7 +69,6 @@ function Navbar() {
       const response = await axios.get("http://localhost:8080/api/user/dto", {
         withCredentials: true,
       });
-      console.log("User response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -82,11 +78,13 @@ function Navbar() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Skip auth check if already logged in
+      if (user?.isLoggedIn) return;
+
       const authData = await isAuthenticated();
-      if (authData && authData.authenticated) {
+      if (authData?.authenticated) {
         const userData = await getUser();
         if (userData) {
-          // Map UserDTO to Redux store format
           const userState = {
             isLoggedIn: true,
             data: {
@@ -100,28 +98,25 @@ function Navbar() {
               techStack: userData.techStack || new Set(),
             },
           };
-
-          console.log("Dispatching login with:", userState);
           dispatch(login(userState));
         }
-      } else {
+      } else if (location.pathname !== '/login') {
         navigate("/login");
       }
     };
 
     checkAuth();
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, user?.isLoggedIn, location.pathname]);
 
   const handleLogout = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.get(
+      await axios.get(
         "http://localhost:8080/api/auth/logout",
         {
           withCredentials: true,
         }
       );
-      console.log("Logout response:", response.data);
       dispatch(logout());
       navigate("/");
     } catch (error) {
@@ -129,17 +124,15 @@ function Navbar() {
     }
   };
 
-  // Listen for unread notifications
+  // Listen for unread notifications only if user is logged in
   useEffect(() => {
     if (!user?.data?.id) return;
 
-    // Listen for project join requests
     const requestsRef = collection(db, "ProjectJoinRequests");
     const requestsQuery = query(requestsRef, 
       where("status", "==", "PENDING")
     );
 
-    // Listen for task notifications
     const tasksRef = collection(db, "Tasks");
     const tasksQuery = query(tasksRef, 
       where("assignedTo", "==", Number(user.data.id)),
@@ -166,7 +159,6 @@ function Navbar() {
     };
   }, [user?.data?.id]);
 
-  // Clear notification indicator when clicking on notifications
   const handleNotificationsClick = () => {
     setHasUnreadNotifications(false);
   };
@@ -183,27 +175,35 @@ function Navbar() {
           </Link>
 
           <div className="flex items-center space-x-2">
-            {navItems.map((item, index) =>
-              item.isLoggedIn ? (
-                <Link
-                  key={index}
-                  to={item.path}
-                  onClick={item.name === "Notifications" ? handleNotificationsClick : undefined}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 relative ${
-                    location.pathname === item.path
-                      ? 'bg-indigo-500/50 text-white'
-                      : 'text-gray-300 hover:bg-indigo-500/30 hover:text-white'
-                  }`}
+            {isLoggedIn ? (
+              <>
+                {navItems.map((item, index) => (
+                  <Link
+                    key={index}
+                    to={item.path}
+                    onClick={item.name === "Notifications" ? handleNotificationsClick : undefined}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors duration-200 relative ${
+                      location.pathname === item.path
+                        ? 'bg-indigo-500/50 text-white'
+                        : 'text-gray-300 hover:bg-indigo-500/30 hover:text-white'
+                    }`}
+                  >
+                    {item.icon}
+                    <span className="font-medium">{item.name}</span>
+                    {item.name === "Notifications" && hasUnreadNotifications && (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-indigo-900/90"></span>
+                    )}
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-500/80 text-white rounded-lg hover:bg-red-500 transition-colors duration-200"
                 >
-                  {item.icon}
-                  <span className="font-medium">{item.name}</span>
-                  {item.name === "Notifications" && hasUnreadNotifications && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-indigo-900/90"></span>
-                  )}
-                </Link>
-              ) : null
-            )}
-            {!isLoggedIn ? (
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-medium">Logout</span>
+                </button>
+              </>
+            ) : (
               <Link
                 to="/login"
                 className="flex items-center space-x-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
@@ -211,14 +211,6 @@ function Navbar() {
                 <LogIn className="w-5 h-5" />
                 <span className="font-medium">Login</span>
               </Link>
-            ) : (
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-500/80 text-white rounded-lg hover:bg-red-500 transition-colors duration-200"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="font-medium">Logout</span>
-              </button>
             )}
           </div>
         </div>

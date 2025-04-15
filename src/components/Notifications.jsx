@@ -16,27 +16,28 @@ function Notifications() {
     const [projects, setProjects] = useState([]);
     const [ownRequests, setOwnRequests] = useState([]);
     const [taskNotifications, setTaskNotifications] = useState([]);
+    const [taskDetails, setTaskDetails] = useState({});
 
-    const loadProjects = async () => {
-        try {
-            const response = await axios.get(
-                "http://localhost:8080/api/user/projects",
-                {
-                    withCredentials: true,
-                }
-            );
-            setProjects(response.data);
-        } catch (error) {
-            console.error("Error loading projects:", error);
+const loadProjects = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/api/user/projects",
+        {
+          withCredentials: true,
         }
-    };
+      );
+      setProjects(response.data);
+    } catch (error) {
+      console.error("Error loading projects:", error);
+    }
+  };
 
     useEffect(() => {
         if (!IsLoggedIn) {
             navigate("/login");
             return;
-        }
-        loadProjects();
+    }
+    loadProjects();
     }, [IsLoggedIn, navigate]);
 
     // Listen for requests to user's projects
@@ -80,8 +81,8 @@ function Notifications() {
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const newRequests = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
+        id: doc.id,
+        ...doc.data(),
                 }));
                 setOwnRequests(newRequests);
             });
@@ -103,8 +104,8 @@ function Notifications() {
 
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const newRequests = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
+        id: doc.id,
+        ...doc.data(),
                 }));
                 setUpdatedRequests(newRequests);
             });
@@ -124,12 +125,42 @@ function Notifications() {
                 where("status", "==", "REQUESTED")
             );
 
-            const unsubscribe = onSnapshot(q, (snapshot) => {
+            const unsubscribe = onSnapshot(q, async (snapshot) => {
                 const newTasks = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
                 setTaskNotifications(newTasks);
+
+                // Fetch additional details for each task
+                const details = {};
+                for (const task of newTasks) {
+                    try {
+                        // Fetch project details
+                        const projectResponse = await axios.get(
+                            `http://localhost:8080/api/project/${task.projectId}`,
+                            { withCredentials: true }
+                        );
+                        
+                        // Fetch assigner details
+                        const assignerResponse = await axios.get(
+                            `http://localhost:8080/api/user/${task.assignedBy}`,
+                            { withCredentials: true }
+                        );
+
+                        details[task.id] = {
+                            projectName: projectResponse.data.name,
+                            assignerLogin: assignerResponse.data.login
+                        };
+                    } catch (error) {
+                        console.error("Error fetching task details:", error);
+                        details[task.id] = {
+                            projectName: "Unknown Project",
+                            assignerLogin: "Unknown User"
+                        };
+                    }
+                }
+                setTaskDetails(details);
             });
 
             return () => unsubscribe();
@@ -197,7 +228,7 @@ function Notifications() {
         return null;
     }
 
-    return (
+  return (
         <div className="min-h-screen w-full bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-950 text-gray-100 p-4 sm:p-6 lg:p-8">
             <div className="max-w-4xl mx-auto space-y-8">
                 <div className="flex items-center gap-3 mb-8">
@@ -226,9 +257,10 @@ function Notifications() {
                                         <div>
                                             <p className="font-semibold text-blue-300">New Task Assigned</p>
                                             <p className="text-gray-300 mt-1">{task.details}</p>
-                                            <p className="text-xs text-gray-400 mt-2">
-                                                Project ID: {task.projectId}
-                                            </p>
+                                            <div className="text-xs text-gray-400 mt-2 space-y-1">
+                                                <p>Project: {taskDetails[task.id]?.projectName || "Loading..."}</p>
+                                                <p>Assigned by: {taskDetails[task.id]?.assignerLogin || "Loading..."}</p>
+                                            </div>
                                         </div>
                                         <div className="flex gap-3">
                                             <button
@@ -318,7 +350,7 @@ function Notifications() {
                             ))}
                         </div>
                     )}
-                </div>
+   </div>
 
                 {/* Updated Requests Section */}
                 <div className="bg-black/20 backdrop-blur-sm rounded-xl p-6">

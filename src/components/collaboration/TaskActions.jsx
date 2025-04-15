@@ -61,26 +61,6 @@ export default function TaskActions({
                 </div>
             )}
 
-            {isCreator && task.status === "REQUEST_COMPLETE" && (
-                <div className="space-x-2">
-                    <button
-                        onClick={() => handleTaskCompletion(task.id, task.pullRequestUrl)}
-                        disabled={loadingStates[task.id]}
-                        className="bg-green-500/80 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm transition-colors backdrop-blur-sm flex items-center space-x-2 disabled:opacity-50"
-                    >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Accept Completion</span>
-                    </button>
-                    <button
-                        onClick={() => handleTaskCompletion(task.id, '')}
-                        disabled={loadingStates[task.id]}
-                        className="bg-red-500/80 hover:bg-red-500 text-white px-4 py-2 rounded-lg text-sm transition-colors backdrop-blur-sm flex items-center space-x-2 disabled:opacity-50"
-                    >
-                        <XCircle className="w-4 h-4" />
-                        <span>Reject Completion</span>
-                    </button>
-                </div>
-            )}
 
             {(isCreator && task.status === "PENDING") && (
                 <button

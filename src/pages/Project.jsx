@@ -183,7 +183,7 @@ function Project() {
                     </Link>
                     <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
                       <DeleteProject
-                        projectId={project.id}
+                        projectId={project.projectId}
                         onProjectDeleted={handleProjectDeleted}
                       />
                     </div>

@@ -134,15 +134,17 @@ function CollaborateProject() {
                 throw new Error("Task not found");
             }
 
+            console.log(prUrl);
+
             const response = await axios.put(
-                'http://localhost:8080/api/task/completion',
+                'http://localhost:8080/api/task/status',
                 {
                     id: taskId,
                     status: 'REQUEST_COMPLETE',
                     assignedTo: Number(task.assignedTo),
                     projectId: Number(task.projectId),
                     details: task.details,
-                    pullRequestUrl: prUrl.trim()
+                    pullRequestUrl: prUrl
                 },
                 { withCredentials: true }
             );
