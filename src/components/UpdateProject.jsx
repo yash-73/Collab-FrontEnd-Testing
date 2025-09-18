@@ -13,6 +13,9 @@ export default function UpdateProject({ project, onUpdate }) {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
+    const [newTech, setNewTech] = useState("");
+    const [techSuggestions, setTechSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -22,15 +25,30 @@ export default function UpdateProject({ project, onUpdate }) {
         }));
     };
 
+    const handleTechInputChange = (e) => {
+        const value = e.target.value;
+        setNewTech(value);
+        if (value.length > 0) {
+            const filtered = techstack.filter((tech) =>
+                tech.toLowerCase().includes(value.toLowerCase())
+            );
+            setTechSuggestions(filtered);
+            setShowSuggestions(true);
+        } else {
+            setTechSuggestions([]);
+            setShowSuggestions(false);
+        }
+    };
+
     const handleAddTech = (e) => {
         e.preventDefault();
-        const newTech = e.target.elements.tech.value.trim().toUpperCase();
-        if (newTech && techstack.includes(newTech)) {
+        if (newTech && techstack.includes(newTech.toUpperCase())) {
             setFormData(prev => ({
                 ...prev,
-                techStack: new Set([...prev.techStack, newTech])
+                techStack: new Set([...prev.techStack, newTech.toUpperCase()])
             }));
-            e.target.reset();
+            setNewTech("");
+            setShowSuggestions(false);
         }
     };
 
@@ -48,8 +66,11 @@ export default function UpdateProject({ project, onUpdate }) {
 
         try {
             const response = await axios.put(
-                `http://localhost:8080/api/project/${project.projectId}`,
+                `http://localhost:8080/api/project/update`,
                 {
+                    projectId: project.projectId,
+                    projectName: project.projectName,
+                    creatorId: project.creatorId,
                     description: formData.description,
                     techStack: Array.from(formData.techStack),
                     githubRepository: formData.githubRepository
@@ -58,7 +79,9 @@ export default function UpdateProject({ project, onUpdate }) {
             );
 
             setSuccess("Project updated successfully!");
+            console.log(response.data);
             onUpdate(response.data);
+
         } catch (error) {
             console.error("Error updating project:", error);
             setError(error.response?.data || "Failed to update project");
@@ -92,7 +115,7 @@ export default function UpdateProject({ project, onUpdate }) {
 
                 {error && (
                     <div className="bg-red-500/20 border border-red-500/30 text-red-200 px-6 py-4 rounded-lg mb-6 backdrop-blur-sm">
-                        {error}
+                        {typeof error === "object" ? error.message || JSON.stringify(error) : error}
                     </div>
                 )}
 
@@ -140,23 +163,41 @@ export default function UpdateProject({ project, onUpdate }) {
                         <label className="block text-sm font-medium text-white/80 mb-1">
                             Tech Stack
                         </label>
-                        <form onSubmit={handleAddTech} className="flex gap-2 mb-4">
+                        <div className="flex gap-2 mb-4">
                             <div className="relative flex-1">
                                 <Code2 className="absolute left-3 top-3 text-white/50" />
                                 <input
                                     type="text"
-                                    name="tech"
+                                    value={newTech}
+                                    onChange={handleTechInputChange}
+                                    placeholder="Search technology..."
                                     className="w-full bg-white/5 border border-white/20 rounded-lg px-10 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent"
-                                    placeholder="Add technology..."
                                 />
+                                {showSuggestions && techSuggestions.length > 0 && (
+                                    <div className="absolute left-0 right-0 mt-2 bg-white/10 border border-white/20 rounded-lg shadow-lg max-h-60 overflow-y-auto backdrop-blur-sm z-10">
+                                        {techSuggestions.map((tech) => (
+                                            <div
+                                                key={tech}
+                                                onClick={() => {
+                                                    setNewTech(tech);
+                                                    setShowSuggestions(false);
+                                                }}
+                                                className="px-4 py-3 hover:bg-white/10 cursor-pointer transition-colors text-white"
+                                            >
+                                                {tech}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <button
-                                type="submit"
+                                type="button"
+                                onClick={handleAddTech}
                                 className="px-4 py-2 bg-indigo-500/80 hover:bg-indigo-600/80 text-white rounded-lg transition-colors duration-200 backdrop-blur-sm"
                             >
-                                Add
+                                +
                             </button>
-                        </form>
+                        </div>
                         <div className="flex flex-wrap gap-2">
                             {Array.from(formData.techStack).map((tech) => (
                                 <div
@@ -165,6 +206,7 @@ export default function UpdateProject({ project, onUpdate }) {
                                 >
                                     <span>{tech}</span>
                                     <button
+                                        type="button"
                                         onClick={() => handleRemoveTech(tech)}
                                         className="text-white/70 hover:text-white transition-colors"
                                     >
