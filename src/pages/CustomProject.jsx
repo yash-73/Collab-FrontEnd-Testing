@@ -113,10 +113,10 @@ function CustomProject() {
           <div className="flex justify-between items-start mb-8">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold text-white">{project.projectName}</h1>
-              <p className="text-gray-300 text-sm">Project ID: {project.id}</p>
+              <p className="text-gray-300 text-sm">Project ID: {project.projectId}</p>
             </div>
             {isCreator && (
-              <UpdateProject project={project} onProjectUpdated={handleProjectUpdated} />
+              <UpdateProject project={project} onUpdate={handleProjectUpdated} />
             )}
           </div>
 

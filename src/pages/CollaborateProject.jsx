@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -7,6 +7,8 @@ import { db } from "../config/firebase";
 import ProjectHeader from "../components/collaboration/ProjectHeader";
 import TaskList from "../components/collaboration/TaskList";
 import TaskFilters from "../components/collaboration/TaskFilters";
+import UpdateProject from "../components/UpdateProject";
+import { ArrowLeft } from 'lucide-react'; // Optional: for an icon
 
 function CollaborateProject() {
     const { projectId } = useParams();
@@ -21,9 +23,12 @@ function CollaborateProject() {
     const [loadingStates, setLoadingStates] = useState({});
     const [showCompletedOnly, setShowCompletedOnly] = useState(false);
     const [showAllTasks, setShowAllTasks] = useState(false);
-
+    const [updateWindow,setUpdateWindow] = useState(false);
     const currentUser = useSelector(state => state.auth.user.data);
 
+    
+
+    
     useEffect(() => {
         const fetchProjectData = async () => {
             try {
@@ -58,6 +63,11 @@ function CollaborateProject() {
 
         fetchProjectData();
     }, [projectId]);
+
+    const onUpdate = useCallback((project)=>{
+        setProject(project);
+
+    }, [project])
 
     useEffect(() => {
         if (!projectId || !currentUser?.id || !project) {
@@ -234,6 +244,14 @@ function CollaborateProject() {
     return (
         <div className="min-h-screen w-full py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto space-y-8">
+                {/* Back Button */}
+                <button
+                    onClick={() => navigate(`/project/${projectId}`)}
+                    className="mb-6 px-4 py-2 bg-indigo-500/80 hover:bg-indigo-600/80 text-white rounded-lg transition-colors duration-200 backdrop-blur-sm flex items-center space-x-2"
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                    <span>Back to Project</span>
+                </button>
                 <div className="bg-white/10 min-h-screen rounded-2xl shadow-lg p-8 backdrop-blur-sm border border-white/20">
                     <div className="flex justify-between items-center mb-8">
                         <h1 className="text-3xl font-bold text-white">{project?.name}</h1>
@@ -248,15 +266,11 @@ function CollaborateProject() {
                                 <span>Messages</span>
                             </button>
                             {isCreator && (
-                                <button
-                                    onClick={() => navigate(`/project/${projectId}/edit`)}
-                                    className="px-4 py-2 bg-indigo-500/80 hover:bg-indigo-600/80 text-white rounded-lg transition-colors duration-200 backdrop-blur-sm"
-                                >
-                                    Edit Project
-                                </button>
+                                <UpdateProject project={project} onUpdate={onUpdate}/>
                             )}
                         </div>
                     </div>
+
                     <ProjectHeader
                         project={project}
                         creator={creator}
